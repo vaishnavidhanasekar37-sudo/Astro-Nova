@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AstroNova – Remote Sensing AI & Earth Intelligence</title>
+  <meta name="description" content="Next-Generation Client-Side Remote Sensing AI Prototype. Multispectral analysis, Earth Digital Twin, Mission Control, and Environmental Intelligence without external APIs." />
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <meta name="theme-color" content="#00f3ff" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- CSS Design System & Components -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/space-bg.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+
+  <!-- ========================================================================
+       CONTINUOUS REVOLVING PLANETS SPACE BACKGROUND
+       Planets continuously revolve along an equator-like orbital line in 3D
+       ======================================================================== -->
+  <div id="space-bg-container" aria-hidden="true">
+    <canvas id="space-canvas"></canvas>
+    <div class="cosmic-vignette"></div>
+    <div class="cosmic-grid-overlay"></div>
+  </div>
+
+  <!-- ========================================================================
+       CINEMATIC SPACE SPLASH SCREEN
+       Shows realistic 3D rotating planets in space with "Welcome Astronova"
+       No login form, no username/email inputs, clean 1-click entry.
+       ======================================================================== -->
+  <div id="intro-overlay" class="intro-cinematic-overlay">
+    <canvas id="intro-canvas" class="intro-stage-canvas"></canvas>
+
+    <!-- Floating Welcome Typography & Orbital Explorer (Matching Reference Image) -->
+    <div class="welcome-space-wrapper">
+      <div class="welcome-center-hero">
+        <h1 class="welcome-hero-title-clean">
+          <span class="title-word">Welcome</span>
+          <span class="title-brand">Astronova</span>
+        </h1>
+        <p class="welcome-hero-tagline-clean">planets &bull; orbits &bull; explore</p>
+      </div>
+
+      <!-- Floating Non-Obstructive Interactive Controls -->
+      <div class="welcome-floating-controls">
+        <button id="btn-enter-astronova" class="btn-enter-astronova-clean">
+          <span class="btn-icon">🚀</span>
+          <span data-i18n="btnEnterApp">ENTER ASTRONOVA</span>
+          <span class="btn-arrow">➔</span>
+        </button>
+
+        <!-- Compact Floating Language Switcher -->
+        <div class="welcome-lang-pills-clean">
+          <button class="welcome-lang-pill" data-lang="en">🇬🇧 EN</button>
+          <button class="welcome-lang-pill" data-lang="ta">🇮🇳 தமிழ்</button>
+          <button class="welcome-lang-pill" data-lang="ml">🇮🇳 ML</button>
+          <button class="welcome-lang-pill" data-lang="kn">🇮🇳 KN</button>
+          <button class="welcome-lang-pill" data-lang="te">🇮🇳 TE</button>
+          <button class="welcome-lang-pill" data-lang="hi">🇮🇳 HI</button>
+          <button class="welcome-lang-pill" data-lang="mr">🇮🇳 MR</button>
+          <button class="welcome-lang-pill" data-lang="ru">🇷🇺 RU</button>
+          <button class="welcome-lang-pill" data-lang="de">🇩🇪 DE</button>
+          <button class="welcome-lang-pill" data-lang="es">🇪🇸 ES</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       APP ROOT SHELL
+       ======================================================================== -->
+  <div id="app-root">
+
+    <!-- Top Non-Authoritative Prototype Watermark Banner -->
+    <div class="prototype-disclaimer-banner">
+      <span class="prototype-tag">PROTOTYPE</span>
+      <span data-i18n="disclaimer">SIMULATED DATA – LOCAL ANALYSIS – NON-AUTHORITATIVE PROTOTYPE</span>
+      <span class="prototype-tag">CLIENT-SIDE ONLY</span>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="top-navbar">
+      <div class="brand-wrapper" onclick="window.AstroApp.switchView('view-overview')">
+        <div class="brand-icon">
+          <img src="assets/logo.png" alt="AstroNova Logo" class="brand-logo-img" />
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">ASTRONOVA</span>
+          <span class="brand-subtitle" data-i18n="brandSubtitle">Remote Sensing Earth Intelligence AI</span>
+        </div>
+      </div>
+
+      <!-- Action controls in Nav -->
+      <div class="nav-actions">
+        <!-- Language Switcher Selector (Supports 10 Languages) -->
+        <button id="btn-lang-toggle" class="btn-hud btn-lang-toggle" title="Select Language / மொழியைத் தேர்ந்தெடு" data-i18n-title="chooseLanguagePrompt">
+          <span>🌐</span> <span id="btn-lang-text" class="btn-text">🇬🇧 English</span>
+          <span class="lang-chevron" style="font-size:0.7rem; opacity:0.7; margin-left:4px;">▼</span>
+        </button>
+
+        <!-- PWA / Network Status Badge -->
+        <div id="network-status-badge" class="status-badge-live">
+          <span class="status-beacon"></span>
+          <span data-i18n="statusLocalActive">🛰️ Local Prototype Active</span>
+        </div>
+
+        <!-- Space Animation Toggle -->
+        <button id="btn-space-anim-toggle" class="btn-hud space-ctrl-btn" title="Toggle background orbital planets animation">
+          <span id="btn-space-anim-text" data-i18n="orbitOn">🌌 Orbit: ON</span>
+        </button>
+
+        <!-- Sound Toggle (Feature: Click Sound + Mute) -->
+        <button id="btn-sound-toggle" class="btn-hud btn-sound-toggle" title="Mute/Unmute button click sound effects">
+          <span>🔊</span> <span class="btn-text" data-i18n="soundOn">Sound: ON</span>
+        </button>
+
+        <!-- Brightness / Darkness Theme Toggle -->
+        <button id="btn-theme-mode-toggle" class="btn-hud btn-theme-toggle" title="Toggle Brightness / Darkness theme mode">
+          <span>☀️</span> <span class="btn-text" data-i18n="themeLight">Brightness</span>
+        </button>
+
+        <!-- AI Conversational Assistant -->
+        <button id="btn-ai-assistant-toggle" class="btn-hud btn-primary" title="Open AI Voice + Text Assistant">
+          <span>🤖</span> <span class="btn-text" data-i18n="aiAssistantBtn">AI Assistant</span>
+        </button>
+
+        <!-- Voice Recognition Toggle (Feature 13) -->
+        <button id="btn-voice-toggle" class="btn-hud" title="Voice Commands (Web Speech)">
+          <span>🎙️</span> <span class="btn-text" data-i18n="voiceBtn">Voice Commands</span>
+        </button>
+
+        <!-- Scan with Camera (Feature 15) -->
+        <button id="btn-open-camera" class="btn-hud" title="Scan with Camera">
+          <span>📸</span> <span class="btn-text" data-i18n="btnScanCamera">Camera Scanner</span>
+        </button>
+
+        <!-- Quick Demo Mode (Feature 24) -->
+        <button id="btn-quick-demo-mode" class="btn-hud btn-accent-gold" title="Load Bundled Offline Demo Satellite Dataset">
+          <span>🧪</span> <span class="btn-text" data-i18n="btnDemoMode">Demo Mode</span>
+        </button>
+
+        <!-- College Presentation Mode (Feature 25) -->
+        <button id="btn-presentation-mode" class="btn-hud btn-primary" title="Start 7-Step College Project Presentation">
+          <span>🏆</span> <span class="btn-text" data-i18n="btnPresentation">Presentation</span>
+        </button>
+
+        <!-- Lock Terminal -->
+        <button id="btn-lock-device" class="btn-hud" title="Lock AstroNova to device" data-i18n-title="btnLockDevice">🔒</button>
+
+        <!-- Replay Intro -->
+        <button id="btn-replay-intro" class="btn-hud btn-icon-only" title="Replay Space Intro Animation" data-i18n-title="btnReplayIntro">▶️</button>
+      </div>
+    </header>
+
+    <!-- App Container (Sidebar + Main Workspace) -->
+    <div class="app-container">
+
+      <!-- Navigation Dock Sidebar -->
+      <aside class="nav-dock">
+        <div class="nav-section-title" data-i18n="sectionCore">முதன்மை நுண்ணறிவு</div>
+        <div class="dock-item active" data-view="view-overview">
+          <span class="dock-icon">🏠</span>
+          <span data-i18n="dockOverview">கண்ணோட்டம்</span>
+        </div>
+        <div class="dock-item" data-view="view-mission">
+          <span class="dock-icon">🛰️</span>
+          <span data-i18n="dockMission">மிஷன் கட்டுப்பாடு</span>
+        </div>
+        <div class="dock-item" data-view="view-earth">
+          <span class="dock-icon">🌍</span>
+          <span data-i18n="dockEarthTwin">பூமி டிஜிட்டல் இரட்டை</span>
+        </div>
+        <div class="dock-item" data-view="view-comparison">
+          <span class="dock-icon">🔬</span>
+          <span data-i18n="dockComparison">பட ஒப்பீடு</span>
+        </div>
+
+        <div class="nav-section-title" data-i18n="sectionSpectral">நிறமாலை பகுப்பாய்வு</div>
+        <div class="dock-item" data-view="view-analysis">
+          <span class="dock-icon">🌱</span>
+          <span data-i18n="dockVegetation">நிறமாலை மையம் (ExG)</span>
+        </div>
+        <div class="dock-item" data-view="view-crops">
+          <span class="dock-icon">🌾</span>
+          <span data-i18n="dockCrops">ஸ்மார்ட் பயிர் கண்காணிப்பு</span>
+        </div>
+        <div class="dock-item" data-view="view-disasters">
+          <span class="dock-icon">🗺️</span>
+          <span data-i18n="dockDisasters">பேரிடர் இடர் வரைபடம்</span>
+        </div>
+        <div class="dock-item" data-view="view-analytics">
+          <span class="dock-icon">📊</span>
+          <span data-i18n="dockAnalytics">பகுப்பாய்வு மற்றும் போக்குகள்</span>
+        </div>
+
+        <div class="nav-section-title" data-i18n="sectionVault">தரவு பெட்டகம் & அமைப்புகள்</div>
+        <div class="dock-item" data-view="view-files">
+          <span class="dock-icon">📁</span>
+          <span data-i18n="dockFiles">எனது பூமி தரவு</span>
+          <span id="badge-files-count" class="badge-counter">⭐</span>
+        </div>
+        <div class="dock-item" data-view="view-settings">
+          <span class="dock-icon">⚙️</span>
+          <span data-i18n="dockSettings">அமைப்புகள் & தனியுரிமை</span>
+        </div>
+      </aside>
+
+      <!-- Main Workspace Container -->
+      <main class="main-workspace">
+
+        <!-- ==================================================================
+             VIEW 0: OVERVIEW / COMMAND CENTER
+             ================================================================== -->
+        <section id="view-overview" class="view-panel active">
+          <!-- Real-Time Celestial Orbital Equator Telemetry Banner -->
+          <div class="equator-hero-banner">
+            <div class="equator-banner-left">
+              <span class="pulse-beacon"></span>
+              <span class="equator-banner-title" data-i18n="orbitalEquatorActive">பூமத்திய ரேகை சுற்றுப்பாதை இயங்குகிறது</span>
+              <span class="equator-banner-sep">·</span>
+              <span class="equator-banner-quote" data-i18n="welcomeEquatorText">"அஸ்ட்ரோநோவாவிற்கு நல்வரவு"</span>
+            </div>
+            <div class="equator-banner-right">
+              <span class="equator-badge" data-i18n="planetsRevolving">8 கோள்கள் தொடர்ந்து சுற்றுகின்றன</span>
+              <span class="equator-badge gold" data-i18n="orbitalEpoch">காலக்கட்டம்: J2026.4</span>
+            </div>
+          </div>
+
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🛰️</span> <span data-i18n="heroTitle">அஸ்ட்ரோ-நோவா பூமி நுண்ணறிவு</span></h1>
+              <p data-i18n="heroSubtitle">அடுத்த தலைமுறை உலாவி சார் செயற்கை நுண்ணறிவு, செயற்கைக்கோள் தொலை அளவியல் மற்றும் சுற்றுச்சூழல் நுண்ணறிவு.</p>
+            </div>
+            <div class="hero-actions">
+              <button class="btn-hud btn-primary" onclick="window.AstroApp.switchView('view-analysis')">
+                <span>🌱</span> <span data-i18n="btnOpenSpectral">நிறமாலை பகுப்பாய்வைத் திற</span>
+              </button>
+              <button id="btn-open-report" class="btn-hud btn-accent-gold">
+                <span>📄</span> <span data-i18n="btnGenerateReport">அறிக்கையை உருவாக்கு</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hero Upload & Quick Actions -->
+          <div class="grid-2" style="margin-bottom: 24px;">
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>📡</span> <span data-i18n="hubTitle">செயற்கைக்கோள் பதிவேற்ற மையம்</span></span>
+                <span class="prototype-tag" data-i18n="statusLocalActive">உள்ளூர் செயலாக்கம்</span>
+              </div>
+              <div id="main-upload-dropzone" class="dropzone-box">
+                <input type="file" id="main-file-input" accept="image/*" style="display:none;" />
+                <div class="dropzone-icon">🛰️</div>
+                <div class="dropzone-text" data-i18n="dropzoneText">Sentinel-2 GeoTIFF அல்லது வான்வழிப் படங்களை இங்கு இழுத்து விடவும்</div>
+                <div class="dropzone-subtext" data-i18n="dropzoneSubtext">GeoTIFF, PNG, JPG அல்லது கேமரா படங்களை ஆதரிக்கிறது. 100% உங்கள் உலாவியில் மட்டுமே செயலாக்கப்படுகிறது.</div>
+              </div>
+
+              <!-- Quick Demo Presets -->
+              <div style="margin-top: 18px;">
+                <div style="font-family:var(--font-hud); font-size:0.8rem; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">
+                  OR LOAD BUNDLED OFFLINE DEMO DATASETS:
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <button class="btn-hud btn-load-demo-preset" data-scenario="agricultural_land" data-title="Agricultural Parcel">🌾 Agriculture</button>
+                  <button class="btn-hud btn-load-demo-preset" data-scenario="flooded_area" data-title="Inundated Flood Delta">💧 Flooded Area</button>
+                  <button class="btn-hud btn-load-demo-preset" data-scenario="dry_land" data-title="Arid Scrubland">🏜️ Dry Soil</button>
+                  <button class="btn-hud btn-load-demo-preset" data-scenario="forest" data-title="Tropical Rainforest">🌲 Dense Forest</button>
+                  <button class="btn-hud btn-load-demo-preset" data-scenario="urban" data-title="Urban Metropolitan">🏙️ Urban Grid</button>
+                  <button class="btn-hud btn-load-demo-preset" data-scenario="fire_burn" data-title="Wildfire Thermal Scar">🔥 Fire Burn Scar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Ingestion Preview & Highlights -->
+            <div class="glass-panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+              <div class="panel-header">
+                <span class="panel-title"><span>🖼️</span> CURRENT ACTIVE SENSOR SCENE</span>
+                <span class="prototype-tag">CLIENT BUFFER</span>
+              </div>
+              <div class="image-canvas-wrapper" style="aspect-ratio: 16 / 9;">
+                <img id="overview-preview-img" src="" alt="Active Satellite Ingestion Preview" />
+                <div class="canvas-hud-crosshair"></div>
+                <div class="canvas-tag"><span>🛰️</span> <span id="overview-img-tag">ACTIVE BUFFER: OPTICAL-NIR</span></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+                <span style="font-size:0.82rem; color:var(--text-muted);">Zero network transmission – 100% in-browser memory.</span>
+                <button class="btn-hud" onclick="window.AstroApp.switchView('view-analysis')">Inspect Indices ➔</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 Circular Gauges Summary Row -->
+          <div class="grid-4" style="margin-bottom: 24px;">
+            <!-- Gauge 1: Vegetation -->
+            <div class="gauge-card">
+              <div class="gauge-svg-container">
+                <svg viewBox="0 0 140 140">
+                  <circle class="gauge-bg-circle" cx="70" cy="70" r="60"/>
+                  <circle id="veg-gauge-circle" class="gauge-val-circle green" cx="70" cy="70" r="60"/>
+                </svg>
+                <div class="gauge-center-text">
+                  <span id="veg-gauge-val" class="gauge-number">68</span>
+                  <span class="gauge-unit">%</span>
+                </div>
+              </div>
+              <div class="gauge-label">Vegetation Health</div>
+              <div class="gauge-subtext">Excess Green Index (ExG)</div>
+              <span class="prototype-tag" style="margin-top:6px;">Local Estimate</span>
+            </div>
+
+            <!-- Gauge 2: Composite Health -->
+            <div class="gauge-card">
+              <div class="gauge-svg-container">
+                <svg viewBox="0 0 140 140">
+                  <circle class="gauge-bg-circle" cx="70" cy="70" r="60"/>
+                  <circle id="health-gauge-circle" class="gauge-val-circle" cx="70" cy="70" r="60"/>
+                </svg>
+                <div class="gauge-center-text">
+                  <span id="health-gauge-val" class="gauge-number">74</span>
+                  <span class="gauge-unit">/ 100</span>
+                </div>
+              </div>
+              <div class="gauge-label">Composite Health Score</div>
+              <div class="gauge-subtext">Chlorophyll & Vigor Index</div>
+              <span class="prototype-tag" style="margin-top:6px;">Simulated Score</span>
+            </div>
+
+            <!-- Gauge 3: Water Surface -->
+            <div class="gauge-card">
+              <div class="gauge-svg-container">
+                <svg viewBox="0 0 140 140">
+                  <circle class="gauge-bg-circle" cx="70" cy="70" r="60"/>
+                  <circle id="water-gauge-circle" class="gauge-val-circle" cx="70" cy="70" r="60"/>
+                </svg>
+                <div class="gauge-center-text">
+                  <span id="water-gauge-val" class="gauge-number">28</span>
+                  <span class="gauge-unit">%</span>
+                </div>
+              </div>
+              <div class="gauge-label">Water Detection</div>
+              <div class="gauge-subtext">Modified NDWI Spectral</div>
+              <span class="prototype-tag" style="margin-top:6px;">Local Estimate</span>
+            </div>
+
+            <!-- Gauge 4: Dryness / Drought -->
+            <div class="gauge-card">
+              <div class="gauge-svg-container">
+                <svg viewBox="0 0 140 140">
+                  <circle class="gauge-bg-circle" cx="70" cy="70" r="60"/>
+                  <circle id="dry-gauge-circle" class="gauge-val-circle gold" cx="70" cy="70" r="60"/>
+                </svg>
+                <div class="gauge-center-text">
+                  <span id="dry-gauge-val" class="gauge-number">22</span>
+                  <span class="gauge-unit">%</span>
+                </div>
+              </div>
+              <div class="gauge-label">Dryness Level</div>
+              <div class="gauge-subtext">Soil Reflectance Anomaly</div>
+              <span class="prototype-tag" style="margin-top:6px;">Local Estimate</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 1: MISSION CONTROL CENTER (Feature 1)
+             ================================================================== -->
+        <section id="view-mission" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🛰️</span> <span data-i18n="missionControlTitle">மிஷன் கட்டுப்பாட்டு மையம்</span></h1>
+              <p data-i18n="mcSubtitle">செயலில் உள்ள செயற்கைக்கோள்களுக்கான நிகழ்நேர தொலை அளவியல்.</p>
+            </div>
+            <div class="hero-actions">
+              <span class="prototype-tag" data-i18n="disclaimer">மாதிரி மட்டுமே – அதிகாரப்பூர்வமற்றது</span>
+            </div>
+          </div>
+
+          <!-- Satellites Selector Tabs -->
+          <div style="display:flex; gap:12px; margin-bottom:20px;">
+            <button class="btn-hud mission-sat-tab active" data-sat="NOVA-01">🛰️ NOVA-01 (Optical)</button>
+            <button class="btn-hud mission-sat-tab" data-sat="TERRA-SCAN">🛰️ TERRA-SCAN (Radar SAR)</button>
+            <button class="btn-hud mission-sat-tab" data-sat="ORBIT-X">🛰️ ORBIT-X (Hyperspectral)</button>
+          </div>
+
+          <!-- Live Orbit SVG Tracker & Primary Telemetry -->
+          <div class="grid-2" style="margin-bottom:24px;">
+            <!-- Orbit Graphic -->
+            <div class="glass-panel" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div class="panel-header" style="width:100%;">
+                <span class="panel-title"><span>🌐</span> <span data-i18n="mcTrackerTitle">நிகழ்நேர சுற்றுப்பாதை கண்காணிப்பு</span></span>
+                <span class="prototype-tag" data-i18n="mcLEO">700 கி.மீ LEO சுற்றுப்பாதை</span>
+              </div>
+
+              <svg viewBox="0 0 400 220" style="width:100%; max-width:460px; height:auto;">
+                <!-- Earth Center Illustration -->
+                <defs>
+                  <radialGradient id="earthIllustGrad" cx="40%" cy="40%" r="50%">
+                    <stop offset="0%" stop-color="#38bdf8" />
+                    <stop offset="60%" stop-color="#1e3a8a" />
+                    <stop offset="100%" stop-color="#020617" />
+                  </radialGradient>
+                </defs>
+                <circle cx="200" cy="110" r="48" fill="url(#earthIllustGrad)" stroke="#00f3ff" stroke-width="1.5"/>
+                <!-- Earth Continents sketch -->
+                <path d="M185 85 Q195 95 190 110 Q205 125 195 140 Q175 125 170 110 Z" fill="#10b981" opacity="0.8"/>
+                <path d="M215 95 Q230 100 225 115 Q210 125 210 110 Z" fill="#10b981" opacity="0.8"/>
+
+                <!-- Orbital Ring Ellipse -->
+                <ellipse cx="200" cy="110" rx="170" ry="75" fill="none" stroke="rgba(0, 243, 255, 0.25)" stroke-dasharray="6 6"/>
+
+                <!-- Animated Satellite Dots on Orbit -->
+                <!-- NOVA-01 -->
+                <circle id="svg-dot-nova-01" cx="370" cy="110" r="7" fill="#ffd166" stroke="#fff" stroke-width="1.5">
+                  <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <!-- TERRA-SCAN -->
+                <circle id="svg-dot-terra-scan" cx="200" cy="35" r="6" fill="#00f3ff" stroke="#fff" stroke-width="1.5"/>
+                <!-- ORBIT-X -->
+                <circle id="svg-dot-orbit-x" cx="80" cy="150" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5"/>
+              </svg>
+
+              <div style="display:flex; gap:18px; margin-top:10px; font-family:var(--font-hud); font-size:0.8rem;">
+                <span style="color:#ffd166;">● NOVA-01</span>
+                <span style="color:#00f3ff;">● TERRA-SCAN</span>
+                <span style="color:#10b981;">● ORBIT-X</span>
+              </div>
+            </div>
+
+            <!-- Active Satellite Telemetry Panel -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span id="mc-sat-name" class="panel-title">NOVA-01</span>
+                <span id="mc-sat-status" class="status-badge-live">OPERATIONAL / SCANNING</span>
+              </div>
+              <div style="font-family:var(--font-hud), sans-serif; color:var(--text-dim); font-size:0.85rem; margin-bottom:12px;" id="mc-sat-type">
+                Optical Multispectral Sentinel
+              </div>
+
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcBattery">மின்கல அளவு:</span>
+                <span id="mc-sat-battery" class="sat-metric-val">94%</span>
+              </div>
+              <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:12px;">
+                <div id="mc-battery-bar" style="width:94%; height:100%; background:var(--matrix-green); transition:width 0.5s ease;"></div>
+              </div>
+
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcSignal">சிக்னல் வலிமை:</span>
+                <span id="mc-sat-signal" class="sat-metric-val">-42 dBm</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcAltitude">சுற்றுப்பாதை உயரம்:</span>
+                <span id="mc-sat-altitude" class="sat-metric-val">705 km</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcSpeed">சுற்றுப்பாதை வேகம்:</span>
+                <span id="mc-sat-speed" class="sat-metric-val">7.56 km/s</span>
+              </div>
+
+              <div class="sat-telemetry-row" style="margin-top:8px;">
+                <span class="sat-metric-label" data-i18n="mcProgress">சுற்றுப்பாதை முன்னேற்றம்:</span>
+                <span id="mc-sat-progress" class="sat-metric-val">68%</span>
+              </div>
+              <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; margin-bottom:12px;">
+                <div id="mc-progress-bar" style="width:68%; height:100%; background:var(--cyber-cyan); transition:width 0.5s ease;"></div>
+              </div>
+
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcThermal">வெப்ப ரேடியேட்டர்:</span>
+                <span id="mc-sat-thermal" class="sat-metric-val">+21.4°C</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcSolar">சூரிய மின்கல உற்பத்தி:</span>
+                <span id="mc-sat-solar" class="sat-metric-val">4.8 kW</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="mcHealth">ஒட்டுமொத்த கணினி நிலை:</span>
+                <span id="mc-sat-health" class="sat-metric-val" style="color:var(--matrix-green);">100% சிறப்பானது</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 2: EARTH DIGITAL TWIN (Feature 2)
+             ================================================================== -->
+        <section id="view-earth" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🌍</span> EARTH DIGITAL TWIN</h1>
+              <p>Interactive 3D-style spherical visualization with rotating continents, orbital grid, day/night line, and location pins.</p>
+            </div>
+            <div class="hero-actions">
+              <span class="prototype-tag">CLIENT GRAPHICS ENGINE</span>
+            </div>
+          </div>
+
+          <div class="earth-twin-stage">
+            <canvas id="earth-twin-canvas"></canvas>
+
+            <!-- Popup for marker details -->
+            <div id="twin-marker-popup" class="earth-marker-hud"></div>
+
+            <!-- Controls Overlay -->
+            <div class="earth-twin-controls">
+              <button id="twin-zoom-in" class="btn-hud" title="Zoom In">🔍 +</button>
+              <button id="twin-zoom-out" class="btn-hud" title="Zoom Out">🔍 -</button>
+              <button id="twin-rotate-toggle" class="btn-hud active" title="Toggle Auto-Rotation">🔄 Rotate</button>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">
+              Tip: Click & drag anywhere on Earth to manually inspect continental zones. Click any glowing location pin for telemetry.
+            </span>
+            <span class="prototype-tag">PROTOTYPE 3D VECTOR PROJECTION</span>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 3: IMAGE COMPARISON (BEFORE VS AFTER) (Feature 3)
+             ================================================================== -->
+        <section id="view-comparison" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🔬</span> BEFORE VS AFTER IMAGE COMPARISON</h1>
+              <p>Dual-image split slider with client-side pixel difference calculations across vegetation, water, brightness, and land changes.</p>
+            </div>
+            <div class="hero-actions">
+              <label class="btn-hud" style="cursor:pointer;">
+                <span>📁</span> Upload Before
+                <input type="file" id="comp-upload-before" accept="image/*" style="display:none;" />
+              </label>
+              <label class="btn-hud" style="cursor:pointer;">
+                <span>📁</span> Upload After
+                <input type="file" id="comp-upload-after" accept="image/*" style="display:none;" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Interactive Comparison Slider Container -->
+          <div id="comparison-box" class="comparison-container">
+            <!-- Before Layer (Underneath) -->
+            <div class="comparison-image-layer comparison-before-layer">
+              <img id="comp-img-before" src="" alt="Before Analysis Image" />
+              <div class="comparison-badge before">BEFORE IMAGE</div>
+            </div>
+
+            <!-- After Layer (Clipped on top) -->
+            <div id="comparison-after-layer" class="comparison-image-layer comparison-after-layer">
+              <img id="comp-img-after" src="" alt="After Analysis Image" />
+              <div class="comparison-badge after">AFTER IMAGE</div>
+            </div>
+
+            <!-- Draggable Split Handle -->
+            <div id="comparison-handle" class="comparison-handle">
+              <div class="comparison-handle-knob">⬌</div>
+            </div>
+          </div>
+
+          <!-- Delta Calculation Metrics Display -->
+          <div class="grid-4" style="margin-top:24px;">
+            <div class="glass-panel" style="text-align:center; padding:16px;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">VEGETATION CHANGE</div>
+              <div id="delta-veg" style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--matrix-green); margin:6px 0;">+14%</div>
+              <div style="font-size:0.75rem; color:var(--text-dim);">ExG Chlorophyll Delta</div>
+            </div>
+
+            <div class="glass-panel" style="text-align:center; padding:16px;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">WATER REGION CHANGE</div>
+              <div id="delta-water" style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--cyber-cyan); margin:6px 0;">+18%</div>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Surface Hydrology Delta</div>
+            </div>
+
+            <div class="glass-panel" style="text-align:center; padding:16px;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">BRIGHTNESS CHANGE</div>
+              <div id="delta-luma" style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--orbital-gold); margin:6px 0;">-8%</div>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Perceived Luminance Delta</div>
+            </div>
+
+            <div class="glass-panel" style="text-align:center; padding:16px;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">POSSIBLE LAND CHANGE</div>
+              <div id="delta-land" style="font-family:var(--font-display); font-size:1.8rem; font-weight:800; color:var(--plasma-red); margin:6px 0;">-12%</div>
+              <div style="font-size:0.75rem; color:var(--text-dim);">Dry Soil / Soil Shift</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 4: SPECTRAL HUB (Features 4, 5, 6, 7 & 12 AI Explain)
+             ================================================================== -->
+        <section id="view-analysis" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🌱</span> SPECTRAL ANALYSIS HUB</h1>
+              <p>Multispectral decomposition: Vegetation Health (ExG), Water Intelligence (NDWI), Fire/Burn Scar, and Drought Aridity.</p>
+            </div>
+            <div class="hero-actions">
+              <label class="btn-hud" style="cursor:pointer;">
+                <span>📁</span> Load Ingestion
+                <input type="file" id="analysis-file-input" accept="image/*" style="display:none;" />
+              </label>
+              <button class="btn-hud btn-accent-gold" onclick="window.AstroApp.runCurrentAnalysis()">
+                <span>🔄</span> Re-Analyze
+              </button>
+            </div>
+          </div>
+
+          <!-- Dual Display: Ingested Image vs False-Color Mask -->
+          <div class="analysis-stage">
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>🛰️</span> INGESTED OPTICAL SCENE</span>
+                <span class="prototype-tag">RGB SPECTRUM</span>
+              </div>
+              <div class="image-canvas-wrapper">
+                <img id="current-analyzed-img" src="" alt="Active Spectral Ingestion" />
+                <div class="canvas-hud-crosshair"></div>
+                <div class="canvas-tag"><span>📷</span> CALIBRATED INPUT</div>
+              </div>
+            </div>
+
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>🔬</span> SPECTRAL FALSE-COLOR MASKS</span>
+                <span class="prototype-tag">PIXEL SEGMENTATION</span>
+              </div>
+
+              <!-- Mask Tabs -->
+              <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                <button class="btn-hud active" onclick="document.querySelectorAll('.mask-canvas').forEach(c=>c.style.display='none'); document.getElementById('canvas-veg-mask').style.display='block';">🌱 Vegetation</button>
+                <button class="btn-hud" onclick="document.querySelectorAll('.mask-canvas').forEach(c=>c.style.display='none'); document.getElementById('canvas-water-mask').style.display='block';">💧 Water (NDWI)</button>
+                <button class="btn-hud" onclick="document.querySelectorAll('.mask-canvas').forEach(c=>c.style.display='none'); document.getElementById('canvas-fire-mask').style.display='block';">🔥 Fire / Burn</button>
+                <button class="btn-hud" onclick="document.querySelectorAll('.mask-canvas').forEach(c=>c.style.display='none'); document.getElementById('canvas-drought-mask').style.display='block';">🏜️ Dry Soil</button>
+              </div>
+
+              <div class="image-canvas-wrapper">
+                <canvas id="canvas-veg-mask" class="mask-canvas"></canvas>
+                <canvas id="canvas-water-mask" class="mask-canvas" style="display:none;"></canvas>
+                <canvas id="canvas-fire-mask" class="mask-canvas" style="display:none;"></canvas>
+                <canvas id="canvas-drought-mask" class="mask-canvas" style="display:none;"></canvas>
+                <div class="canvas-hud-crosshair"></div>
+                <div class="canvas-tag"><span>⚡</span> SPECTRAL CLUSTER OVERLAY</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Indicator Metrics -->
+          <div class="grid-3" style="margin-top:24px;">
+            <!-- Water Intelligence Card -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>💧</span> WATER INTELLIGENCE</span>
+                <span class="prototype-tag">NDWI</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Water-to-Land Ratio:</span>
+                <span id="water-ratio-val" class="sat-metric-val">0.39</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Hydrological Segments:</span>
+                <span id="water-regions-val" class="sat-metric-val">12</span>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                Identifies cyan/blue spectral absorption characteristic of water bodies and moisture channels.
+              </p>
+            </div>
+
+            <!-- Fire & Burn Scar Card -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>🔥</span> FIRE & BURN SCAR</span>
+                <span class="prototype-tag">THERMAL</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Estimated Burn Area:</span>
+                <span id="fire-burn-val" class="sat-metric-val" style="color:var(--plasma-red);">0%</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Damage Indicator:</span>
+                <span id="fire-damage-val" class="sat-metric-val">Low / Negligible</span>
+              </div>
+              <span class="prototype-tag" style="margin-top:8px; display:inline-block;">Prototype Image Indicator – Not a Real Fire Detection System</span>
+            </div>
+
+            <!-- Drought Monitor Card -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>🏜️</span> DROUGHT MONITOR</span>
+                <span class="prototype-tag">ARIDITY</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Drought Risk Rating:</span>
+                <span id="drought-risk-val" class="sat-metric-val" style="color:var(--orbital-gold);">Low</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Risk Thresholds:</span>
+                <span class="sat-metric-val" style="font-size:0.8rem;">Low / Moderate / High</span>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                Measures loss of chlorophyll combined with heightened soil albedo reflectance.
+              </p>
+            </div>
+          </div>
+
+          <!-- FEATURE 12: AI EXPLAIN MODE (Simple vs Technical Tabs) -->
+          <div class="explain-container">
+            <div class="panel-header">
+              <span class="panel-title"><span>🧠</span> AI EXPLAIN MODE</span>
+              <span class="prototype-tag">DEMOCRATIZING DATA</span>
+            </div>
+            <div class="explain-tab-bar">
+              <button class="explain-tab-btn active" data-explain-mode="simple" data-i18n="explainSimpleTab">Simple Explanation</button>
+              <button class="explain-tab-btn" data-explain-mode="tech" data-i18n="explainTechTab">Technical Explanation</button>
+            </div>
+            <div id="explain-simple-box" class="explain-content-box">
+              <p id="explain-simple-text" data-i18n="explainSimpleText">
+                Your image shows a relatively high green-region estimate. This may indicate vegetation-covered land. The result is based only on local image characteristics.
+              </p>
+            </div>
+            <div id="explain-tech-box" class="explain-content-box" style="display:none;">
+              <p id="explain-tech-text" data-i18n="explainTechText">
+                Excess Green Index computed as ExG = 2G - R - B. Normalized Difference Water Index (NDWI) evaluated across Blue (450nm equivalent) and NIR-simulated absorption bands.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 5: SMART CROP MONITOR (Feature 8)
+             ================================================================== -->
+        <section id="view-crops" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🌾</span> SMART CROP MONITOR</h1>
+              <p>Crop-specific canopy evaluation, water requirements, and educational agronomy suggestions.</p>
+            </div>
+            <div class="hero-actions">
+              <span class="prototype-tag">EDUCATIONAL GUIDANCE</span>
+            </div>
+          </div>
+
+          <!-- 6 Crop Selectors -->
+          <div class="crop-select-grid">
+            <div class="crop-card-btn active" data-crop="rice">
+              <div class="crop-emoji">🌾</div>
+              <div class="crop-name">Rice (Paddy)</div>
+            </div>
+            <div class="crop-card-btn" data-crop="wheat">
+              <div class="crop-emoji">🌿</div>
+              <div class="crop-name">Wheat</div>
+            </div>
+            <div class="crop-card-btn" data-crop="maize">
+              <div class="crop-emoji">🌽</div>
+              <div class="crop-name">Maize</div>
+            </div>
+            <div class="crop-card-btn" data-crop="cotton">
+              <div class="crop-emoji">🌱</div>
+              <div class="crop-name">Cotton</div>
+            </div>
+            <div class="crop-card-btn" data-crop="vegetables">
+              <div class="crop-emoji">🥬</div>
+              <div class="crop-name">Vegetables</div>
+            </div>
+            <div class="crop-card-btn" data-crop="other">
+              <div class="crop-emoji">🌻</div>
+              <div class="crop-name">Other / General</div>
+            </div>
+          </div>
+
+          <!-- Crop Diagnosis Card -->
+          <div class="grid-2">
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>🌱</span> SELECTED CROP: <span id="crop-selected-name" style="color:var(--cyber-cyan);">RICE</span></span>
+                <span class="prototype-tag">SPECTRAL MATCH</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Estimated Crop Health:</span>
+                <span id="crop-health-val" class="sat-metric-val">74%</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Vegetation Score:</span>
+                <span id="crop-veg-val" class="sat-metric-val">68%</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Water Requirement:</span>
+                <span id="crop-water-val" class="sat-metric-val">High (Standing water optimal)</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label">Parcel Dryness Indicator:</span>
+                <span id="crop-dry-val" class="sat-metric-val">22%</span>
+              </div>
+            </div>
+
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>💡</span> EDUCATIONAL AGRONOMY GUIDANCE</span>
+                <span class="prototype-tag">NON-AUTHORITATIVE</span>
+              </div>
+              <div id="crop-advice-text" style="font-size:0.92rem; line-height:1.7; color:#e2e8f0; margin-bottom:14px;">
+                Chlorophyll canopy is dense. Maintain water depth at 5-7 cm during tillering stage. Monitor for stem borer signs.
+              </div>
+              <div style="font-size:0.75rem; color:var(--orbital-gold);">
+                * Disclaimer: Educational recommendations for project demonstrations. Always verify with certified agronomists and local extension officers.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 6: DISASTER RISK MAP (Feature 9)
+             ================================================================== -->
+        <section id="view-disasters" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>🗺️</span> DISASTER RISK MAP</h1>
+              <p>Visual SVG world map displaying simulated indicators for Flood, Drought, Wildfire, and Landslide.</p>
+            </div>
+            <div class="hero-actions">
+              <span class="prototype-tag">ALL MARKERS: SIMULATED</span>
+            </div>
+          </div>
+
+          <div id="disaster-map-container" class="disaster-map-wrapper"></div>
+
+          <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; gap:16px; font-family:var(--font-hud); font-size:0.85rem;">
+              <span style="color:#00f3ff;">● Flood [SIMULATED]</span>
+              <span style="color:#ffd166;">● Drought [SIMULATED]</span>
+              <span style="color:#ff3366;">● Fire [SIMULATED]</span>
+              <span style="color:#f97316;">● Landslide [SIMULATED]</span>
+            </div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Click any pulse marker for prototype diagnostic telemetry.</span>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 7: ANALYTICS & TRENDS (Features 10 & 11)
+             ================================================================== -->
+        <section id="view-analytics" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>📊</span> ANALYTICS & ENVIRONMENTAL TRENDS</h1>
+              <p>Local analytics counts and multi-timestamp timeline tracking changes in Vegetation, Water, and Dryness.</p>
+            </div>
+            <div class="hero-actions">
+              <button id="btn-add-timeline-entry" class="btn-hud">
+                <span>➕</span> Add Timeline Point
+              </button>
+            </div>
+          </div>
+
+          <!-- 6 Stat Counters stored in LocalStorage -->
+          <div class="grid-3" style="margin-bottom:24px;">
+            <div class="glass-panel" style="text-align:center;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">TOTAL ANALYSES</div>
+              <div id="stat-total-analyses" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--cyber-cyan); margin:6px 0;">14</div>
+              <span class="prototype-tag">Stored in LocalStorage</span>
+            </div>
+            <div class="glass-panel" style="text-align:center;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">IMAGES ANALYZED</div>
+              <div id="stat-images-analyzed" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--matrix-green); margin:6px 0;">14</div>
+              <span class="prototype-tag">IndexedDB Ingested</span>
+            </div>
+            <div class="glass-panel" style="text-align:center;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">AGRICULTURE ANALYSES</div>
+              <div id="stat-agri-count" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--orbital-gold); margin:6px 0;">9</div>
+              <span class="prototype-tag">Parcel Records</span>
+            </div>
+            <div class="glass-panel" style="text-align:center;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">DISASTER ASSESSMENTS</div>
+              <div id="stat-disaster-count" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--plasma-red); margin:6px 0;">5</div>
+              <span class="prototype-tag">Simulated Events</span>
+            </div>
+            <div class="glass-panel" style="text-align:center;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">AVG VEGETATION SCORE</div>
+              <div id="stat-avg-veg" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--matrix-green); margin:6px 0;">64%</div>
+              <span class="prototype-tag">Rolling Average</span>
+            </div>
+            <div class="glass-panel" style="text-align:center;">
+              <div style="font-family:var(--font-hud); font-size:0.85rem; color:var(--text-muted);">AVG WATER ESTIMATE</div>
+              <div id="stat-avg-water" style="font-family:var(--font-display); font-size:2rem; font-weight:800; color:var(--cyber-cyan); margin:6px 0;">28%</div>
+              <span class="prototype-tag">Rolling Average</span>
+            </div>
+          </div>
+
+          <!-- Feature 11: Environmental Timeline Chart -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <span class="panel-title"><span>📈</span> MULTI-DATE ENVIRONMENTAL TIMELINE</span>
+              <div style="display:flex; gap:12px; font-size:0.8rem; font-family:var(--font-hud);">
+                <span style="color:#10b981;">● Vegetation %</span>
+                <span style="color:#00f3ff;">● Water %</span>
+                <span style="color:#ffd166;">● Dryness %</span>
+                <span style="color:#c084fc;">● Agri Health Score</span>
+              </div>
+            </div>
+            <div style="width:100%; height:320px; position:relative;">
+              <canvas id="trend-chart-canvas"></canvas>
+            </div>
+            <div style="margin-top:12px; text-align:right; font-size:0.75rem; color:var(--orbital-gold);">
+              LOCAL ESTIMATE TIMELINE – Example: Day 1 → 55% | Day 7 → 63% | Day 14 → 72%
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 8: FILE MANAGER ("MY EARTH DATA") (Features 16 & 18)
+             ================================================================== -->
+        <section id="view-files" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>📁</span> <span data-i18n="vaultTitle">MY EARTH DATA</span></h1>
+              <p data-i18n="filesSub">Client-side IndexedDB repository for stored images, spectral analyses, reports, and comparisons.</p>
+            </div>
+            <div class="hero-actions">
+              <button class="btn-hud" onclick="window.AstroStorage.filterOnlyFavorites = !window.AstroStorage.filterOnlyFavorites; window.AstroStorage.renderFileList();">
+                <span>⭐</span> <span data-i18n="btnFilterFav">Filter Favorites</span>
+              </button>
+              <button class="btn-hud" onclick="window.AstroStorage.exportDataJSON()">
+                <span>💾</span> <span data-i18n="btnExportBackup">Export Backup (JSON)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Grid of Stored Records in IndexedDB -->
+          <div id="files-grid-container" class="grid-3"></div>
+        </section>
+
+        <!-- ==================================================================
+             VIEW 9: SETTINGS & PRIVACY CENTER (Features 20 & 23)
+             ================================================================== -->
+        <section id="view-settings" class="view-panel">
+          <div class="module-hero">
+            <div class="module-title-group">
+              <h1><span>⚙️</span> <span data-i18n="settingsTitle">SETTINGS & PRIVACY CENTER</span></h1>
+              <p data-i18n="settingsSub">Configure preferences, manage themes, export data, and inspect local device storage.</p>
+            </div>
+            <div class="hero-actions">
+              <span class="prototype-tag" data-i18n="zeroServerTag">ZERO SERVER DEPENDENCY</span>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-bottom:24px;">
+            <!-- Advanced Preferences -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>⚙️</span> <span data-i18n="settingConfigTitle">SYSTEM CONFIGURATION</span></span>
+              </div>
+
+              <!-- Sound FX Toggle -->
+              <div class="sat-telemetry-row" style="align-items:center;">
+                <span class="sat-metric-label" data-i18n="settingSoundFx">🔊 Button Click Sounds:</span>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:var(--font-hud); font-size:0.88rem;">
+                  <input type="checkbox" id="setting-sound-toggle" checked style="width:16px; height:16px; cursor:pointer;" />
+                  <span data-i18n="settingSoundFxEnabled">Sound Effects Enabled</span>
+                </label>
+              </div>
+
+              <!-- Brightness / Darkness Mode Switcher -->
+              <div class="sat-telemetry-row" style="align-items:center;">
+                <span class="sat-metric-label" data-i18n="settingDisplayMode">🌓 Display Mode:</span>
+                <div style="display:flex; gap:8px;">
+                  <button id="setting-btn-dark-mode" class="btn-hud btn-primary" onclick="window.AstroTheme && window.AstroTheme.setMode('dark')" data-i18n="themeDark">🌑 Darkness</button>
+                  <button id="setting-btn-light-mode" class="btn-hud" onclick="window.AstroTheme && window.AstroTheme.setMode('light')" data-i18n="themeLight">☀️ Brightness</button>
+                </div>
+              </div>
+
+              <!-- Theme Selector -->
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="settingThemeLabel">Interface Theme:</span>
+                <select id="setting-theme-select" style="background:#050814; color:#fff; border:1px solid var(--border-glass); padding:4px 8px; border-radius:4px; font-family:var(--font-hud);">
+                  <option value="default">Cyber Cyan (Default)</option>
+                  <option value="solar">Solar Flare (Gold)</option>
+                  <option value="emerald">Emerald Matrix (Green)</option>
+                  <option value="deepnavy">Deep Space Navy</option>
+                </select>
+              </div>
+
+              <!-- Language Selector -->
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="settingLangLabel">Language / மொழி:</span>
+                <select id="setting-language-select" style="background:#050814; color:#00f3ff; border:1px solid var(--cyber-cyan); padding:6px 12px; border-radius:6px; font-family:var(--font-hud), sans-serif; font-size:0.92rem; font-weight:700;">
+                  <option value="en">🇬🇧 English (English)</option>
+                  <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
+                  <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+                  <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+                  <option value="te">🇮🇳 తెలుగు (Telugu)</option>
+                  <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                  <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                  <option value="ru">🇷🇺 Русский (Russian)</option>
+                  <option value="de">🇩🇪 Deutsch (German)</option>
+                  <option value="es">🇪🇸 Español (Spanish)</option>
+                </select>
+              </div>
+
+              <!-- Data Management -->
+              <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+                <button id="btn-export-json" class="btn-hud" data-i18n="settingExportBtn">📤 Export All Local Data (JSON)</button>
+                <label class="btn-hud" style="cursor:pointer; text-align:center;">
+                  <span data-i18n="settingImportBtn">📥 Import Data (JSON)</span>
+                  <input type="file" id="setting-import-file" accept=".json" style="display:none;" />
+                </label>
+                <button id="btn-clear-local-data" class="btn-hud btn-danger" data-i18n="settingClearBtn">🗑️ Clear All Stored Data</button>
+              </div>
+            </div>
+
+            <!-- FEATURE 23: PRIVACY CENTER -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <span class="panel-title"><span>🔐</span> <span data-i18n="privacyCenterTitle">PRIVACY CENTER</span></span>
+                <span class="prototype-tag" data-i18n="privacyOfflineBadge">100% OFFLINE</span>
+              </div>
+
+              <div style="background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.3); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px;">
+                <div style="font-family:var(--font-hud); font-weight:700; color:var(--matrix-green); font-size:0.95rem;" data-i18n="privacyZeroCloud">
+                  🔒 ZERO CLOUD TRANSMISSION GUARANTEE
+                </div>
+                <div style="font-size:0.84rem; color:#e2e8f0; margin-top:4px;" data-i18n="privacyZeroCloudText">
+                  “Your prototype analysis data is stored locally on this device.”
+                </div>
+              </div>
+
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="privacyLocalFootprint">Local Data Footprint:</span>
+                <span id="privacy-stored-size" class="sat-metric-val">0 KB</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="privacyImagesCount">Images Stored in IndexedDB:</span>
+                <span id="privacy-images-count" class="sat-metric-val">0</span>
+              </div>
+              <div class="sat-telemetry-row">
+                <span class="sat-metric-label" data-i18n="privacyRecordsCount">History Records in IndexedDB:</span>
+                <span id="privacy-records-count" class="sat-metric-val">0</span>
+              </div>
+
+              <div style="margin-top:16px; font-size:0.78rem; color:var(--text-muted); line-height:1.5;" data-i18n="privacySandboxNote">
+                AstroNova operates strictly within your browser's sandboxed environment utilizing HTML5 Canvas, LocalStorage, and IndexedDB. No cookies, trackers, paid APIs, Firebase, or external telemetry servers are connected.
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 1: CAMERA SCANNER (Feature 15)
+       Capture -> Preview -> Analyze -> Result
+       ======================================================================== -->
+  <div id="camera-scan-modal" class="modal-overlay">
+    <div class="modal-window" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>📸 SCAN WITH DEVICE CAMERA</h2>
+        <button id="camera-modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <!-- Step 1: Live Video -->
+        <div id="camera-step-live">
+          <div style="border:1px solid var(--border-glass); border-radius:var(--radius-md); overflow:hidden; background:#000; height:340px;">
+            <video id="camera-video-preview" style="width:100%; height:100%; object-fit:cover;" autoplay playsinline></video>
+          </div>
+          <button id="btn-camera-capture" class="btn-hud btn-primary" style="margin-top:16px; font-size:1rem; padding:10px 24px;">
+            📸 Capture Frame
+          </button>
+        </div>
+
+        <!-- Step 2: Preview & Confirm -->
+        <div id="camera-step-preview" style="display:none;">
+          <div style="border:1px solid var(--border-glass); border-radius:var(--radius-md); overflow:hidden; background:#000; height:340px;">
+            <img id="camera-captured-preview" style="width:100%; height:100%; object-fit:contain;" />
+          </div>
+          <div style="margin-top:16px; display:flex; justify-content:center; gap:12px;">
+            <button id="btn-camera-retake" class="btn-hud">🔄 Retake</button>
+            <button id="btn-camera-analyze" class="btn-hud btn-primary">⚡ Analyze Ingested Frame</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Analyzing Spinner -->
+        <div id="camera-step-analyzing" style="display:none; padding:40px 0;">
+          <div style="font-size:2.5rem; animation:spin 1s infinite linear;">🛰️</div>
+          <div style="font-family:var(--font-hud); font-size:1.1rem; color:var(--cyber-cyan); margin-top:12px;">
+            Executing Client-Side Spectral Segmentation...
+          </div>
+        </div>
+        <canvas id="camera-capture-canvas" style="display:none;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: DISASTER DETAIL HUD (Feature 9)
+       ======================================================================== -->
+  <div id="disaster-detail-modal" class="modal-overlay">
+    <div class="modal-window" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>🗺️ SIMULATED DISASTER TELEMETRY</h2>
+        <button onclick="document.getElementById('disaster-detail-modal').classList.remove('active')" class="modal-close-btn">&times;</button>
+      </div>
+      <div id="disaster-modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: SMART REPORT GENERATOR DOSSIER (Feature 17)
+       ======================================================================== -->
+  <div id="report-dossier-modal" class="modal-overlay">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2>📄 REMOTE SENSING INTELLIGENCE REPORT</h2>
+        <button id="report-modal-close" class="modal-close-btn">&times;</button>
+      </div>
+      <div id="report-dossier-content" class="modal-body"></div>
+      <div class="modal-footer">
+        <button id="btn-save-report-db" class="btn-hud">💾 Save to My Earth Data</button>
+        <button id="btn-print-report" class="btn-hud btn-primary">🖨️ Download / Print Report (PDF)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 4: COLLEGE PRESENTATION MODE OVERLAY (Feature 25)
+       Complete 7-Step Workflow:
+       Upload Image -> Local Analysis -> AI-style Interpretation ->
+       Agriculture / Disaster Assessment -> Charts -> Report -> Share
+       ======================================================================== -->
+  <div id="presentation-overlay">
+    <div class="presentation-header">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="assets/logo.png" alt="AstroNova" style="width:42px; height:42px; border-radius:8px; object-fit:contain; filter:drop-shadow(0 0 10px rgba(0,243,255,0.5));" />
+        <div>
+          <h2 style="font-family:var(--font-display); color:var(--cyber-cyan); margin:0;">COLLEGE DEMONSTRATION WORKFLOW</h2>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">AstroNova End-to-End System Evaluation</p>
+        </div>
+      </div>
+      <button id="presentation-close-btn" class="modal-close-btn">&times;</button>
+    </div>
+
+    <!-- 7 Step Stepper Chips -->
+    <div id="presentation-stepper-chips" class="presentation-stepper"></div>
+
+    <!-- Presentation Viewport Slide -->
+    <div class="presentation-body-viewport">
+      <div id="pres-slide-counter" class="prototype-tag" style="margin-bottom:12px;">1 / 7</div>
+      <h2 id="pres-slide-title" style="font-family:var(--font-display); font-size:1.8rem; color:#fff; margin-bottom:8px;">
+        Step 1: Image Ingestion
+      </h2>
+      <h4 id="pres-slide-subtitle" style="font-family:var(--font-hud); font-size:1.1rem; color:var(--cyber-cyan); margin-bottom:18px;">
+        Multispectral Sensor Ingestion
+      </h4>
+      <p id="pres-slide-summary" style="max-width:720px; font-size:1.05rem; line-height:1.7; color:#e2e8f0; margin-bottom:20px;">
+        Summary goes here...
+      </p>
+      <div id="pres-slide-tech" style="background:rgba(0, 243, 255, 0.08); border:1px solid var(--border-glass); border-radius:var(--radius-sm); padding:12px 20px; max-width:680px; font-size:0.88rem; color:var(--text-cyan);">
+        Tech specs...
+      </div>
+    </div>
+
+    <!-- Presentation Footer Controls -->
+    <div class="presentation-footer">
+      <button id="pres-auto-btn" class="btn-hud btn-accent-gold">▶ Auto Play (6s)</button>
+      <div style="display:flex; gap:12px;">
+        <button id="pres-prev-btn" class="btn-hud">⮜ Previous Step</button>
+        <button id="pres-next-btn" class="btn-hud btn-primary">Next Step ⮞</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       FEATURE 13: VOICE COMMAND HUD INDICATOR
+       ======================================================================== -->
+  <div id="voice-hud-indicator">
+    <div class="voice-wave">
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+      <div class="voice-bar"></div>
+    </div>
+    <span id="voice-hud-text" style="font-family:var(--font-hud); font-weight:700; color:#fff; font-size:0.95rem;">
+      Listening for AstroNova commands...
+    </span>
+  </div>
+
+  <!-- ========================================================================
+       AI CONVERSATIONAL ASSISTANT DRAWER (Voice + Text)
+       ======================================================================== -->
+  <aside id="ai-assistant-drawer" class="ai-assistant-drawer" role="complementary" aria-label="AI Assistant">
+    <!-- Drawer Header -->
+    <div class="ai-drawer-header">
+      <div class="ai-drawer-title">
+        <span style="font-size:1.5rem;">🤖</span>
+        <div>
+          <h3>ASTRO AI ASSISTANT</h3>
+          <div class="ai-status-indicator">
+            <span id="ai-assistant-status-text">Online • Ready</span>
+          </div>
+        </div>
+        <!-- Speaking waveform (visible when AI is speaking) -->
+        <div id="ai-speaking-wave" class="ai-speaking-wave">
+          <div class="ai-wave-bar"></div>
+          <div class="ai-wave-bar"></div>
+          <div class="ai-wave-bar"></div>
+          <div class="ai-wave-bar"></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="ai-voice-toggle-btn" class="btn-hud" title="Toggle spoken voice responses" style="font-size:0.78rem; padding:5px 10px;">🔊 Spoken Voice: ON</button>
+        <button id="ai-assistant-close" class="modal-close-btn" title="Close AI Assistant">✕</button>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Chips -->
+    <div class="ai-chips-row">
+      <button class="ai-prompt-chip" data-prompt="Hey! How are you today?">👋 Hey!</button>
+      <button class="ai-prompt-chip" data-prompt="What is this percentage level?">📊 % Levels</button>
+      <button class="ai-prompt-chip" data-prompt="Show vegetation health">🌱 Vegetation</button>
+      <button class="ai-prompt-chip" data-prompt="What is the water detection level?">💧 Water</button>
+      <button class="ai-prompt-chip" data-prompt="Show mission control status">🛰️ Mission</button>
+      <button class="ai-prompt-chip" data-prompt="What is the drought level?">🏜️ Drought</button>
+    </div>
+
+    <!-- Chat Log Viewport -->
+    <div id="ai-chat-log" class="ai-chat-viewport"></div>
+
+    <!-- Footer: Input Row + Mic -->
+    <div class="ai-drawer-footer">
+      <div class="ai-input-row">
+        <input type="text" id="ai-text-input" placeholder="Ask anything... e.g. Hey, how are you?" autocomplete="off" />
+        <button id="ai-mic-btn" class="ai-mic-btn btn-hud" title="Voice input – hold to speak">🎙️</button>
+        <button id="ai-send-btn" class="btn-hud btn-primary" title="Send message">➤</button>
+      </div>
+      <div class="ai-footer-controls">
+        <span style="color:var(--text-dim); font-family:var(--font-hud); font-size:0.75rem;">💬 Text or 🎙️ Voice · AI responds in text &amp; voice</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Floating AI Orb (always visible quick-open) -->
+  <button class="floating-ai-orb" id="floating-ai-orb" title="Open AI Assistant">🤖</button>
+
+  <!-- Toast Notification System (Feature 19) -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       JAVASCRIPT MODULE SCRIPTS
+       ======================================================================== -->
+  <script src="js/planet3DEngine.js"></script>
+  <script src="js/spaceBackground.js"></script>
+  <script src="js/soundEffects.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/deviceAuth.js"></script>
+  <script src="js/aiAssistant.js"></script>
+  <script src="js/imageProcessor.js"></script>
+  <script src="js/comparison.js"></script>
+  <script src="js/earthTwin.js"></script>
+  <script src="js/missionControl.js"></script>
+  <script src="js/disasterMap.js"></script>
+  <script src="js/cropMonitor.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/demoData.js"></script>
+  <script src="js/presentationMode.js"></script>
+  <script src="js/speechRecognition.js"></script>
+  <script src="js/cameraScanner.js"></script>
+  <script src="js/storageManager.js"></script>
+  <script src="js/reportGenerator.js"></script>
+  <script src="js/introAnimation.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((reg) => console.log('AstroNova PWA Service Worker registered:', reg.scope))
+          .catch((err) => console.log('AstroNova Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

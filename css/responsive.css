@@ -1,0 +1,130 @@
+/* ==========================================================================
+   ASTRONOVA - Responsive Design & Mobile Adaptations
+   ========================================================================== */
+
+@media (max-width: 1200px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .satellite-grid {
+    grid-template-columns: 1fr;
+  }
+  .crop-select-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .nav-dock {
+    width: 100%;
+    max-height: none;
+    position: relative;
+    top: 0;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 10px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-glass);
+    flex-wrap: nowrap;
+  }
+  
+  .nav-section-title {
+    display: none;
+  }
+  
+  .dock-item {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .main-workspace {
+    max-width: 100vw;
+    padding: 18px 16px;
+  }
+  
+  .analysis-stage {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid-2, .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .comparison-container {
+    height: 340px;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-navbar {
+    padding: 0 14px;
+    height: 64px;
+  }
+  
+  .brand-title {
+    font-size: 1.05rem;
+  }
+  
+  .brand-subtitle {
+    display: none;
+  }
+  
+  .crop-select-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .module-title-group h1 {
+    font-size: 1.35rem;
+  }
+  
+  .comparison-container {
+    height: 260px;
+  }
+  
+  .intro-logo-glow {
+    font-size: 2.2rem;
+  }
+  
+  .orbital-hud-info {
+    display: none;
+  }
+  
+  .nav-actions {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
+
+/* Print Styles for Official Dossier Reports */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  #space-bg-container, .top-navbar, .nav-dock, .prototype-disclaimer-banner, .btn-hud, #intro-overlay, #presentation-overlay, #voice-hud-indicator, #toast-container {
+    display: none !important;
+  }
+  .modal-overlay {
+    position: static !important;
+    display: block !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+  }
+  .modal-window {
+    max-width: 100% !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    color: #000 !important;
+  }
+  .modal-window * {
+    color: #000 !important;
+    border-color: #ccc !important;
+  }
+}
